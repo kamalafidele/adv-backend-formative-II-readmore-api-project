@@ -1,11 +1,23 @@
 const express = require('express');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const { MONGODB_URI } = process.env;
 
+mongoose.set('strictQuery', false);
+
+mongoose
+  .connect(MONGODB_URI, {
+    autoIndex: true,
+  })
+  .then(() => console.log('Successfully connected to MongoDb'))
+  .catch((e) => console.log('Could not connect to MongoDb', e));
+
+  
 // Parsing incoming JSON requests
 app.use(express.json());
 
