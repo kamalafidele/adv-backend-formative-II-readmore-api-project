@@ -10,30 +10,37 @@ const { MONGODB_URI } = process.env;
 
 mongoose.set('strictQuery', false);
 
-mongoose
-  .connect(MONGODB_URI, {
-    autoIndex: true,
-  })
-  .then(() => console.log('Successfully connected to MongoDb'))
-  .catch((e) => console.log('Could not connect to MongoDb', e));
-
-  
-// Parsing incoming JSON requests
+// Parse incoming JSON requests
 app.use(express.json());
 
-// Logging requests
+// Log requests
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.url}`);
   next();
 });
 
-
-app.get('/system-health', (req, res) => {
-  res.send('Everything working as expected!');
+// Health check
+app.get('/', (req, res) => {
+  res.json({ message: 'ReadMore API is running' });
 });
 
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+async function start() {
+  try {
+    if (!MONGODB_URI) {
+      throw new Error('MONGODB_URI is not set in .env');
+    }
+    
+    await mongoose.connect(MONGODB_URI);
+    console.log('Successfully connected to MongoDB');
+
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  } catch (e) {
+    console.error('Could not connect to MongoDB', e);
+    process.exit(1);
+  }
+}
+
+start();
