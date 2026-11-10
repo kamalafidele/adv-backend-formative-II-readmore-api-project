@@ -101,11 +101,10 @@ exports.createBook = asyncHandler(async (req, res) => {
   res.status(201).json(book);
 });
 
-// GET /books  — dynamic filtering, sorting and pagination
+// GET /books
 exports.getBooks = asyncHandler(async (req, res) => {
   const { genre, minPrice, maxPrice, author, search, sort, order, page, limit } = req.query;
 
-  // Query params can arrive as arrays/objects (?genre[]=a); only accept plain strings.
   for (const [name, value] of Object.entries({ genre, minPrice, maxPrice, author, search, sort, order, page, limit })) {
     if (value !== undefined && typeof value !== 'string') {
       return res.status(400).json({ message: `Query parameter "${name}" must be a single value` });
@@ -147,7 +146,7 @@ exports.getBooks = asyncHandler(async (req, res) => {
     }
   }
 
-  // Sorting (whitelisted so clients can't sort on arbitrary fields)
+
   let sortSpec = { _id: 1 };
   if (sort !== undefined) {
     if (!SORTABLE_FIELDS.includes(sort)) {
@@ -157,7 +156,7 @@ exports.getBooks = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: 'order must be "asc" or "desc"' });
     }
     const direction = order && order.toLowerCase() === 'desc' ? -1 : 1;
-    sortSpec = { [sort]: direction, _id: 1 }; // _id keeps pages stable when values tie
+    sortSpec = { [sort]: direction, _id: 1 };
   }
 
   // Pagination
@@ -217,7 +216,7 @@ exports.updateBook = asyncHandler(async (req, res) => {
     return res.status(422).json({ message: 'Validation failed', errors: ruleErrors });
   }
 
-  // Duplicate check against the book as it WILL look after the update (excluding itself).
+
   const finalTitle = updates.title !== undefined ? updates.title : book.title;
   const finalAuthor = updates.author !== undefined ? updates.author : book.author;
   if (await titleTaken(finalAuthor, finalTitle, book._id)) {
